@@ -4,6 +4,8 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "../ui/button";
+import Image from "next/image";
+import { HERO_VARIANTS, HERO_IMAGES } from "@/lib/constants/banner";
 
 function useTypewriter(text, speed = 30) {
   const [displayed, setDisplayed] = useState("");
@@ -27,33 +29,10 @@ function useTypewriter(text, speed = 30) {
   return displayed;
 }
 
-const HERO_VARIANTS = {
-  "/hero-main.png": {
-    label: "Join Our Community",
-    href: "/join",
-    tag: "Community",
-    text: "A flexible, next-gen tech community built for learning, building, and scaling. From workshops to hackathons, we help you turn skills into momentum.",
-  },
-  "/ilya-pavlov-OqtafYT5kTw-unsplash.jpg": {
-    label: "Explore Hackathons",
-    href: "/hackathons",
-    tag: "Events",
-    text: "Compete, collaborate, and create at high-impact hackathons designed to push your technical limits and real-world problem-solving skills.",
-  },
-  "/memento-media-2pPw5Glro5I-unsplash.jpg": {
-    label: "Meet the Team",
-    href: "/team",
-    tag: "Team",
-    text: "A passionate team of builders, mentors, and innovators working together to shape the next generation of tech leaders.",
-  },
-};
-
-const IMAGES = Object.keys(HERO_VARIANTS);
-
 export default function HeroSection() {
-  const [background, setBackground] = useState(IMAGES[0]);
+  const [background, setBackground] = useState(HERO_IMAGES[0]);
 
-  const thumbnails = IMAGES.filter((img) => img !== background);
+  const thumbnails = HERO_IMAGES.filter((img) => img !== background);
   const { label, href, text } = HERO_VARIANTS[background];
   const typedText = useTypewriter(text, 12);
   return (
@@ -122,7 +101,10 @@ export default function HeroSection() {
         <div className="relative z-10 hidden md:grid grid-cols-[2fr_1.5fr] gap-x-6 items-stretch py-12">
           {/* LOGO */}
           <div className="flex items-center justify-center h-full">
-            <img
+            <Image
+              width={1000}
+              height={1000}
+              quality={100}
               src="/logo/uic.webp"
               alt="UIC Logo"
               className="max-h-full max-w-full object-contain"
@@ -137,9 +119,12 @@ export default function HeroSection() {
                 onClick={() => setBackground(img)}
                 className="relative rounded-xl transition-transform duration-300 hover:scale-105"
               >
-                <img
+                <Image
                   src={img}
-                  alt=""
+                  width={240}
+                  height={160}
+                  quality={50}
+                  alt={HERO_VARIANTS[img].alt}
                   className="w-72 object-cover rounded-xl"
                 />
 

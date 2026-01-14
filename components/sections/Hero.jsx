@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "../ui/button";
-import Image from "next/image";
 import { HERO_VARIANTS, HERO_IMAGES } from "@/lib/constants/banner";
 
 function useTypewriter(text = "", speed = 30) {
@@ -13,14 +13,13 @@ function useTypewriter(text = "", speed = 30) {
   useEffect(() => {
     if (!text) return;
 
+    setDisplayed("");
     let i = 0;
 
     const interval = setInterval(() => {
-      setDisplayed(text.substring(0, i + 1));
       i++;
-      if (i >= text.length) {
-        clearInterval(interval);
-      }
+      setDisplayed(text.slice(0, i));
+      if (i >= text.length) clearInterval(interval);
     }, speed);
 
     return () => clearInterval(interval);
@@ -28,29 +27,62 @@ function useTypewriter(text = "", speed = 30) {
 
   return displayed;
 }
-export default function HeroSection() {
-  const [background, setBackground] = useState(HERO_IMAGES[0]);
 
-  const thumbnails = HERO_IMAGES.filter((img) => img !== background);
-  const { label, href, text, heading } = HERO_VARIANTS[background];
+export default function HeroSection() {
+  const [currentBg, setCurrentBg] = useState(HERO_IMAGES[0]);
+  const [nextBg, setNextBg] = useState(null);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+
+  const thumbnails = HERO_IMAGES.filter((img) => img !== currentBg);
+  const { label, href, text, heading } = HERO_VARIANTS[currentBg];
+
   const typedText = useTypewriter(text, 13);
   const typedHeading = useTypewriter(heading, 15);
+
+  const changeBackground = (img) => {
+    if (img === currentBg || isTransitioning) return;
+
+    setNextBg(img);
+    setIsTransitioning(true);
+
+    setTimeout(() => {
+      setCurrentBg(img);
+      setNextBg(null);
+      setIsTransitioning(false);
+    }, 300);
+  };
+
   return (
     <section className="w-full">
       <div
         className="
-          relative overflow-hidden rounded-4xl bg-black text-white
+          relative overflow-hidden rounded-4xl text-white
           min-h-150
           grid grid-cols-1 md:grid-cols-2
           px-3 md:px-16
         "
       >
         <Image
-          src={background}
+          src={currentBg}
           alt=""
           fill
-          className="pointer-events-none transition-all duration-500 object-cover object-center"
+          priority
+          className="pointer-events-none object-cover object-center"
         />
+
+        {/* Incoming Background (cross-fade) */}
+        {nextBg && (
+          <Image
+            src={nextBg}
+            alt=""
+            fill
+            className={cn(
+              "pointer-events-none object-cover object-center",
+              "transition-opacity duration-300 ease-in-out",
+              isTransitioning ? "opacity-100" : "opacity-0"
+            )}
+          />
+        )}
 
         <div className="absolute inset-0 bg-black/40 pointer-events-none" />
 
@@ -104,11 +136,11 @@ export default function HeroSection() {
             />
           </div>
 
-          <div className="md:flex flex-col gap-y-6 hidden justify-center">
+          <div className="md:flex hidden flex-col gap-y-6 justify-center">
             {thumbnails.map((img) => (
               <button
                 key={img}
-                onClick={() => setBackground(img)}
+                onClick={() => changeBackground(img)}
                 className="relative rounded-xl transition-transform duration-300 hover:scale-105"
               >
                 <Image
@@ -119,7 +151,6 @@ export default function HeroSection() {
                   alt={HERO_VARIANTS[img].alt}
                   className="w-72 object-cover rounded-xl"
                 />
-
                 <span className="absolute bottom-3 left-3 text-sm font-semibold tracking-wide text-white">
                   {HERO_VARIANTS[img].tag}
                 </span>
